@@ -84,7 +84,7 @@ h3.g{font-size:1.8rem;margin:3rem 0 .4rem}
 .simon{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;max-width:340px}
 .sp{aspect-ratio:1.4;border:0;border-radius:18px;cursor:pointer;opacity:.55;transition:opacity .1s,transform .1s}
 .sp.on{opacity:1;transform:scale(1.05);box-shadow:0 0 24px var(--c)}
-#aim{position:relative;border-radius:var(--r);overflow:hidden;background:#1d0a24}
+#aim{position:relative;border-radius:var(--r);overflow:hidden;background:#4a2c7a}
 #aimc{width:100%;height:auto;display:block;cursor:crosshair}
 .tools input[type=number]{padding:.3rem .5rem;border-radius:8px;border:0;font:inherit;background:var(--ink);color:#2D1036}
 .tools input[type=range]{accent-color:var(--gold)}
@@ -166,7 +166,7 @@ footer{text-align:center;padding:2.5rem 1rem 4rem;color:var(--mute);max-width:60
   <p class="sub">Repite la secuencia. Nivel: <b id="slvl">0</b> · Récord: <b id="sbest">0</b> <button class="btn" id="sgo" style="margin-left:.6rem">Empezar</button></p>
   <div class="simon" id="simon"></div>
   <h3 class="g">Entrenador de puntería (estilo Aimlab)</h3>
-  <p class="sub">Para practicar Valorant: pon tu sensibilidad y tu DPI y la mira se mueve igual que en el juego. Al empezar, el mouse queda capturado; con Esc sales.</p>
+  <p class="sub">Practica tu puntería. Soy fan de Valorant, así que quise añadir este entrenador: pon tu sensibilidad y tu DPI y la mira se mueve igual que en el juego. Al empezar, el mouse queda capturado; con Esc sales.</p>
   <div class="tools" id="amodes" role="group" aria-label="Modo"></div>
   <div class="tools"><label>Sens. Valorant <input type="number" id="vsens" value="0.4" step="0.01" min="0.05" max="5" style="width:5.2rem"></label><label>DPI <input type="number" id="dpi" value="800" step="50" min="100" style="width:5.2rem"></label><span>= <b id="cm">—</b> cm/360°</span></div>
   <div id="hud"><span id="alab">Aciertos:</span> <output id="ahit">0</output><span>Precisión: <output id="aacc">0%</output></span><span>Tiempo: <output id="atime">30</output></span><span>Récord: <output id="abest">0</output></span><button class="btn" id="ago">Empezar</button></div>
@@ -420,14 +420,21 @@ function aimShoot(){
 }
 function line(pts){ a2.beginPath(); let on=false; for(const q of pts){ const p=proj(q[0],q[1],WZ); if(!p){ on=false; continue; } on?a2.lineTo(p.x,p.y):a2.moveTo(p.x,p.y); on=true; } a2.stroke(); }
 function aimDraw(){
-  const gr=a2.createLinearGradient(0,0,0,AH); gr.addColorStop(0,'#1d0a24'); gr.addColorStop(1,'#34123f'); a2.fillStyle=gr; a2.fillRect(0,0,AW,AH);
-  a2.strokeStyle='rgba(104,80,173,.4)'; a2.lineWidth=1.5;
+  const gr=a2.createLinearGradient(0,0,0,AH); gr.addColorStop(0,'#7b5bb8'); gr.addColorStop(1,'#432a74'); a2.fillStyle=gr; a2.fillRect(0,0,AW,AH);
+  a2.strokeStyle='rgba(255,255,255,.22)'; a2.lineWidth=1.5;
   for(let k=-26;k<=26;k+=2){ const v=[],h=[]; for(let m=-26;m<=26;m+=2){ v.push([k,m]); h.push([m,k]); } line(v); line(h); }
-  for(const t of AS.t){ const p=pr(t); if(!p) continue; const on=AMODE=='track'&&AS.onT;
-    const rg=a2.createRadialGradient(p.x-p.r*.35,p.y-p.r*.35,p.r*.1,p.x,p.y,p.r); rg.addColorStop(0,on?'#fff':'#ffe3d0'); rg.addColorStop(.45,on?'#ff9a6b':'#D97352'); rg.addColorStop(1,'#7a3a22');
-    a2.shadowColor=on?'#ffb18a':'rgba(0,0,0,.5)'; a2.shadowBlur=on?30:12; a2.fillStyle=rg; a2.beginPath(); a2.arc(p.x,p.y,p.r,0,6.283); a2.fill(); a2.shadowBlur=0; }
+  for(const t of AS.t){ const p=pr(t); if(!p) continue; const on=AMODE=='track'&&AS.onT, R=p.r, X=p.x, Y=p.y;
+    a2.save(); a2.shadowColor=on?'#fff36b':'rgba(20,5,30,.65)'; a2.shadowBlur=on?40:20; a2.shadowOffsetY=on?0:R*.18; a2.fillStyle=on?'#ffe14d':'#ff7a2f'; a2.beginPath(); a2.arc(X,Y,R,0,6.283); a2.fill(); a2.restore();
+    const rg=a2.createRadialGradient(X-R*.35,Y-R*.4,R*.05,X,Y,R); rg.addColorStop(0,'#fffaf0'); rg.addColorStop(.22,on?'#fff07a':'#ffb766'); rg.addColorStop(.62,on?'#ffc400':'#ff6a1f'); rg.addColorStop(1,on?'#b67c00':'#9c2d0a');
+    a2.fillStyle=rg; a2.beginPath(); a2.arc(X,Y,R,0,6.283); a2.fill();
+    a2.save(); a2.beginPath(); a2.arc(X,Y,R,0,6.283); a2.clip();
+    const rim=a2.createRadialGradient(X+R*.5,Y+R*.55,R*.05,X+R*.5,Y+R*.55,R*.75); rim.addColorStop(0,'rgba(255,236,170,.65)'); rim.addColorStop(1,'rgba(255,236,170,0)'); a2.fillStyle=rim; a2.fillRect(X-R,Y-R,R*2,R*2);
+    a2.strokeStyle='rgba(255,255,255,.3)'; a2.lineWidth=Math.max(1.5,R*.04); a2.beginPath(); a2.arc(X,Y,R*.55,0,6.283); a2.stroke(); a2.restore();
+    a2.fillStyle='rgba(255,255,255,.9)'; a2.beginPath(); a2.ellipse(X-R*.38,Y-R*.42,R*.2,R*.12,-.7,0,6.283); a2.fill();
+    a2.lineWidth=Math.max(2,R*.07); a2.strokeStyle='#fff'; a2.beginPath(); a2.arc(X,Y,R,0,6.283); a2.stroke();
+    a2.lineWidth=Math.max(1.5,R*.03); a2.strokeStyle='#2D1036'; a2.beginPath(); a2.arc(X,Y,R+a2.lineWidth*1.6+Math.max(2,R*.035),0,6.283); a2.stroke(); }
   AS.fx=AS.fx.filter(f=>f.a>0); for(const f of AS.fx){ a2.strokeStyle=`rgba(255,227,208,${f.a})`; a2.lineWidth=4; a2.beginPath(); a2.arc(f.x,f.y,f.r*(1+(1-f.a)*1.4),0,6.283); a2.stroke(); f.a-=.07; }
-  const cx=AW/2, cy=AH/2; a2.strokeStyle='#6ff'; a2.lineWidth=3; a2.beginPath(); for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){ a2.moveTo(cx+dx*5,cy+dy*5); a2.lineTo(cx+dx*14,cy+dy*14); } a2.stroke();
+  const cx=AW/2, cy=AH/2; for(const [w,c] of [[6,'#1d0a24'],[3,'#6ff']]){ a2.strokeStyle=c; a2.lineWidth=w; a2.beginPath(); for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){ a2.moveTo(cx+dx*5,cy+dy*5); a2.lineTo(cx+dx*14,cy+dy*14); } a2.stroke(); }
   a2.fillStyle='#6ff'; a2.fillRect(cx-1.5,cy-1.5,3,3);
 }
 function aimFrame(now){

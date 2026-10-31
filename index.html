@@ -69,7 +69,22 @@ dialog::backdrop{background:rgba(20,5,26,.88)}
 #msg{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:1rem;font:1.4rem 'Bagel Fat One';background:rgba(45,16,54,.78)}
 .fall{position:absolute;top:-50px;border:0;background:none;font-size:2.4rem;cursor:pointer;animation:fall linear forwards;padding:.2rem}
 @keyframes fall{to{transform:translateY(450px) rotate(240deg)}}
-footer{text-align:center;padding:2.5rem 1rem 4rem;color:var(--mute)}
+.tools{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-bottom:.8rem}
+.tools .chip{padding:.4rem .8rem}.tools label{font-weight:800;display:flex;gap:.4rem;align-items:center}
+.tools input[type=color]{width:2.6rem;height:2.2rem;border:0;border-radius:8px;background:none;cursor:pointer}
+#pal{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:.8rem}
+#pal button{width:28px;height:28px;border-radius:7px;border:2px solid transparent;cursor:pointer;padding:0}
+#pal button[aria-pressed=true]{border-color:#fff;transform:scale(1.2)}
+#board{width:100%;height:auto;background:#fff;border-radius:var(--r);touch-action:none;cursor:crosshair;display:block;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+h3.g{font-size:1.8rem;margin:3rem 0 .4rem}
+.mem{display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem;max-width:560px}
+.mc{aspect-ratio:1;border:0;border-radius:14px;background:var(--red);color:#fff;font:2rem 'Bagel Fat One';cursor:pointer;padding:0;overflow:hidden}
+.mc img{width:100%;height:100%;object-fit:cover;display:block}
+.mc.ok{outline:4px solid var(--gold)}
+.simon{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;max-width:340px}
+.sp{aspect-ratio:1.4;border:0;border-radius:18px;cursor:pointer;opacity:.55;transition:opacity .1s,transform .1s}
+.sp.on{opacity:1;transform:scale(1.05);box-shadow:0 0 24px var(--c)}
+footer{text-align:center;padding:2.5rem 1rem 4rem;color:var(--mute);max-width:60ch;margin:auto}footer strong{color:var(--ink);font:1.3rem 'Bagel Fat One'}
 #toast{position:fixed;left:50%;bottom:1.5rem;transform:translate(-50%,200%);background:var(--ink);color:#111;padding:.8rem 1.2rem;border-radius:12px;font-weight:800;z-index:100;transition:transform .3s;max-width:92vw}
 #toast.on{transform:translate(-50%,0)}
 @media(max-width:760px){.hero{grid-template-columns:1fr;min-height:auto}.lb{grid-template-columns:1fr;overflow:auto}.lb img{max-height:55vh}}
@@ -80,7 +95,7 @@ footer{text-align:center;padding:2.5rem 1rem 4rem;color:var(--mute)}
 <canvas id="ink" aria-hidden="true"></canvas>
 <nav aria-label="Principal">
   <b>Helen</b>
-  <a href="#galeria">Galería</a><a href="#redes">Redes</a><a href="#juego">Juego</a><a href="#apoyo">Apoyo</a>
+  <a href="#galeria">Galería</a><a href="#pizarra">Pizarra</a><a href="#juego">Juegos</a><a href="#redes">Redes</a><a href="#apoyo">Apoyo</a>
 </nav>
 
 <section class="hero" id="inicio">
@@ -88,7 +103,7 @@ footer{text-align:center;padding:2.5rem 1rem 4rem;color:var(--mute)}
     <h1>Helen</h1>
     <p>Arte digital, personajes y mundos dibujados a mano. Pasa, mira, juega un rato.</p>
     <a class="btn red" href="#galeria">Ver mis dibujos</a>
-    <a class="btn" href="#juego">Jugar</a>
+    <a class="btn" href="#pizarra">Dibujar conmigo</a>
   </div>
   <div class="portrait"><img src="img/helen-cafe.jpg" alt="Autorretrato de Helen tomando café sentada en el suelo"><span>mucho café, mucho dibujo</span></div>
 </section>
@@ -110,6 +125,19 @@ footer{text-align:center;padding:2.5rem 1rem 4rem;color:var(--mute)}
   </div>
 </dialog>
 
+<section id="pizarra">
+  <h2>Pizarra de dibujo</h2>
+  <p class="sub">Dibuja lo que quieras con mis pinceles y colores. Cuando termines, descárgalo.</p>
+  <div class="tools" id="brushes" role="group" aria-label="Pinceles"></div>
+  <div class="tools">
+    <label>Tamaño <input type="range" id="size" min="2" max="60" value="8"></label>
+    <label>Color propio <input type="color" id="cust" value="#d97352"></label>
+    <button class="btn" id="undo">↩ Deshacer</button><button class="btn" id="clr">🗑 Limpiar</button><button class="btn red" id="save">⬇ Descargar PNG</button>
+  </div>
+  <div id="pal" role="group" aria-label="Paleta de colores"></div>
+  <canvas id="board" width="1000" height="620" aria-label="Lienzo de dibujo"></canvas>
+</section>
+
 <section id="redes">
   <h2>Encuéntrame</h2>
   <p class="sub">Aquí subo cosas nuevas y aquí puedes escribirme para comisiones.</p>
@@ -117,10 +145,17 @@ footer{text-align:center;padding:2.5rem 1rem 4rem;color:var(--mute)}
 </section>
 
 <section id="juego">
-  <h2>Atrapa las estrellas</h2>
+  <h2>Juegos</h2>
+  <h3 class="g" style="margin-top:0">Atrapa las estrellas</h3>
   <p class="sub">Tienes 25 segundos. Estrella +1, pincel +3. Cuidado con la esponja: te quita 2 puntos.</p>
   <div id="hud"><span>Puntos: <output id="score">0</output></span><span>Tiempo: <output id="time">25</output></span><span>Récord: <output id="best">0</output></span><button class="btn" id="play">Jugar</button></div>
   <div id="arena"><div id="msg">Pulsa «Jugar» para empezar</div></div>
+  <h3 class="g">Memoria de mis dibujos</h3>
+  <p class="sub">Encuentra las parejas. <b id="mmoves">0</b> movimientos <button class="btn" id="mnew" style="margin-left:.6rem">Nueva partida</button></p>
+  <div class="mem" id="mem"></div>
+  <h3 class="g">Simón de colores</h3>
+  <p class="sub">Repite la secuencia. Nivel: <b id="slvl">0</b> · Récord: <b id="sbest">0</b> <button class="btn" id="sgo" style="margin-left:.6rem">Empezar</button></p>
+  <div class="simon" id="simon"></div>
 </section>
 
 <section id="apoyo">
@@ -135,7 +170,11 @@ footer{text-align:center;padding:2.5rem 1rem 4rem;color:var(--mute)}
   </div>
 </section>
 
-<footer>© <span id="yr"></span> Helen · Todos los dibujos son de mi autoría. Por favor no los uses sin permiso.</footer>
+<footer>
+  <strong>© <span id="yr"></span> Artist Helen Portillo</strong><br>
+  Todos los derechos reservados. No uses, copies, edites ni entrenes IA con mis dibujos sin mi permiso.<br>
+  ¿Quieres usar uno o pedir una comisión? Escríbeme por mis redes.
+</footer>
 <div id="toast" role="status"></div>
 
 <script>
@@ -237,6 +276,67 @@ $('#play').onclick=()=>{
   if(running) return; running=true; score=0; left=25; $('#score').textContent=0; $('#time').textContent=left; msg.hidden=true;
   spawn=setInterval(drop,520); tick=setInterval(()=>{ $('#time').textContent=--left; if(left<=0) end(); },1000);
 };
+
+/* Pizarra */
+const bd=$('#board'), g=bd.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,bd.width,bd.height);
+let col='#2D1036', brush='lapiz', drawing=false, lx, ly, hist=[], acc=0;
+const BR=[['lapiz','✏️ Lápiz'],['suave','☁️ Suave'],['marcador','🖍️ Marcador'],['spray','💨 Spray'],['tinta','🖋️ Tinta'],['estrellas','✨ Estrellas'],['borrador','🧽 Borrador']];
+BR.forEach(([k,n],i)=>{ const b=document.createElement('button'); b.className='chip'; b.textContent=n; b.setAttribute('aria-pressed',i==0);
+  b.onclick=()=>{ brush=k; $('#brushes').querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed',x==b)); }; $('#brushes').append(b); });
+const cols=['#000000','#2D1036','#555555','#888888','#bbbbbb','#ffffff','#6B0733','#6850AD','#D97352','#f6c9a0','#e0ac84','#b97a57','#8a5233','#5b3420'];
+for(let h=0;h<360;h+=30) for(const l of [22,40,58,78]) cols.push(`hsl(${h} 80% ${l}%)`);
+cols.forEach(c=>{ const b=document.createElement('button'); b.style.background=c; b.setAttribute('aria-label','Color '+c); b.setAttribute('aria-pressed',c==col);
+  b.onclick=()=>pick(c,b); $('#pal').append(b); });
+function pick(c,b){ col=c; $('#pal').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x==b)); if(brush=='borrador'){ brush='lapiz'; $('#brushes').children[0].click(); } }
+$('#cust').oninput=e=>pick(e.target.value,null);
+const pos=e=>{ const r=bd.getBoundingClientRect(); return [(e.clientX-r.left)*bd.width/r.width,(e.clientY-r.top)*bd.height/r.height]; };
+function seg(x0,y0,x1,y1,pr){
+  const S=+$('#size').value*(pr||1); g.save(); g.lineCap='round'; g.lineJoin='round'; g.strokeStyle=g.fillStyle=col;
+  if(brush=='borrador'){ g.strokeStyle='#fff'; g.lineWidth=S*1.8; line(); }
+  else if(brush=='lapiz'){ g.lineWidth=S; line(); }
+  else if(brush=='suave'){ g.globalAlpha=.55; g.shadowColor=col; g.shadowBlur=S; g.lineWidth=S; line(); }
+  else if(brush=='marcador'){ g.globalAlpha=.3; g.lineCap='square'; g.lineWidth=S*1.8; line(); }
+  else if(brush=='spray'){ for(let i=0;i<S*1.5;i++){ const a=Math.random()*6.283, d=Math.random()*S*1.6; g.fillRect(x1+Math.cos(a)*d,y1+Math.sin(a)*d,1.6,1.6); } }
+  else if(brush=='tinta'){ g.lineCap='butt'; g.lineWidth=1.6; for(let k=-S/2;k<=S/2;k+=1){ g.beginPath(); g.moveTo(x0+k,y0-k); g.lineTo(x1+k,y1-k); g.stroke(); } }
+  else if(brush=='estrellas'){ acc+=Math.hypot(x1-x0,y1-y0); if(acc>S*2.2){ acc=0; g.font=`${S*2.2+10}px sans-serif`; g.textAlign='center'; g.textBaseline='middle'; g.fillText(Math.random()<.5?'✦':'★',x1,y1); } }
+  g.restore(); function line(){ g.beginPath(); g.moveTo(x0,y0); g.lineTo(x1,y1); g.stroke(); }
+}
+bd.onpointerdown=e=>{ bd.setPointerCapture(e.pointerId); hist.push(g.getImageData(0,0,bd.width,bd.height)); if(hist.length>12) hist.shift();
+  drawing=true; [lx,ly]=pos(e); acc=0; seg(lx,ly,lx+.01,ly+.01,e.pointerType=='pen'?e.pressure*1.6:1); };
+bd.onpointermove=e=>{ if(!drawing) return; const [x,y]=pos(e); seg(lx,ly,x,y,e.pointerType=='pen'?Math.max(.2,e.pressure*1.6):1); lx=x; ly=y; };
+bd.onpointerup=bd.onpointercancel=()=>drawing=false;
+$('#undo').onclick=()=>{ const h=hist.pop(); if(h) g.putImageData(h,0,0); else toast('No hay nada que deshacer'); };
+$('#clr').onclick=()=>{ hist.push(g.getImageData(0,0,bd.width,bd.height)); g.fillStyle='#fff'; g.fillRect(0,0,bd.width,bd.height); };
+$('#save').onclick=()=>{ const a=document.createElement('a'); a.download='mi-dibujo.png'; a.href=bd.toDataURL('image/png'); a.click(); };
+
+/* Memoria */
+let first=null, lock=false, moves=0, found=0;
+function newMem(){
+  const pick=[...ART].sort(()=>Math.random()-.5).slice(0,6), deck=[...pick,...pick].sort(()=>Math.random()-.5);
+  const m=$('#mem'); m.innerHTML=''; first=null; lock=false; moves=0; found=0; $('#mmoves').textContent=0;
+  deck.forEach(a=>{ const b=document.createElement('button'); b.className='mc'; b.textContent='?'; b.setAttribute('aria-label','Carta oculta'); b.dataset.f=a.f;
+    b.onclick=()=>{ if(lock||b.classList.contains('ok')||b==first) return;
+      b.innerHTML=`<img src="img/${a.f}.jpg" alt="${a.t}">`;
+      if(!first){ first=b; return; }
+      $('#mmoves').textContent=++moves;
+      if(first.dataset.f==b.dataset.f){ first.classList.add('ok'); b.classList.add('ok'); first=null; if(++found==6) toast(`¡Ganaste en ${moves} movimientos!`); }
+      else { lock=true; const f=first; first=null; setTimeout(()=>{ f.textContent=b.textContent='?'; lock=false; },800); } };
+    m.append(b); });
+}
+$('#mnew').onclick=newMem; newMem();
+
+/* Simón */
+const SC=[['#D97352',262],['#6850AD',330],['#c0306a',392],['#fbeedd',523]]; let seq=[], step2=0, accept=false, sb=0, ac;
+try{ sb=+localStorage.getItem('helen-simon')||0; }catch(e){} $('#sbest').textContent=sb;
+SC.forEach(([c],i)=>{ const b=document.createElement('button'); b.className='sp'; b.style.background=c; b.style.setProperty('--c',c); b.setAttribute('aria-label','Pad '+(i+1));
+  b.onclick=()=>{ if(!accept) return; flash(i); if(seq[step2]!=i){ accept=false; toast(`Fallaste. Llegaste al nivel ${seq.length-1}`); const sc=seq.length-1; if(sc>sb){ sb=sc; $('#sbest').textContent=sb; try{ localStorage.setItem('helen-simon',sb); }catch(e){} } return; }
+    if(++step2==seq.length){ accept=false; setTimeout(next,700); } };
+  $('#simon').append(b); });
+function flash(i){ const b=$('#simon').children[i]; b.classList.add('on'); setTimeout(()=>b.classList.remove('on'),300);
+  try{ ac=ac||new AudioContext(); const o=ac.createOscillator(), v=ac.createGain(); o.frequency.value=SC[i][1]; v.gain.value=.08; o.connect(v); v.connect(ac.destination); o.start(); o.stop(ac.currentTime+.25); }catch(e){} }
+function next(){ seq.push(Math.floor(Math.random()*4)); $('#slvl').textContent=seq.length; step2=0;
+  seq.forEach((n,k)=>setTimeout(()=>flash(n),k*600+300)); setTimeout(()=>accept=true,seq.length*600+300); }
+$('#sgo').onclick=()=>{ seq=[]; accept=false; next(); };
 
 /* Rastro de tinta */
 const cv=$('#ink'), cx=cv.getContext('2d'); let px=null, py=null, n=0; const INK=['#D97352','#6850AD','#c0306a'];

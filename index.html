@@ -48,12 +48,12 @@ h2{font-size:clamp(2.2rem,6vw,3.6rem);margin-bottom:.4rem}
 .card em{position:absolute;left:0;right:0;bottom:0;padding:2rem .9rem .7rem;font:normal 1.1rem 'Bagel Fat One';background:linear-gradient(transparent,rgba(30,8,38,.92));opacity:0;transition:opacity .2s}
 .card:hover em,.card:focus-visible em{opacity:1}
 .card[hidden]{display:none}
-dialog{border:0;background:var(--bg2);color:var(--ink);border-radius:22px;width:min(1000px,94vw);max-height:92vh;padding:0;overflow:hidden}
+dialog{margin:auto;border:0;background:var(--bg2);color:var(--ink);border-radius:22px;width:min(1000px,94vw);max-height:92vh;padding:0;overflow:hidden}
 dialog::backdrop{background:rgba(20,5,26,.88)}
-.lb{display:grid;grid-template-columns:1.3fr 1fr;max-height:92vh}
-.stage{position:relative;display:grid;place-items:center;height:min(88vh,820px);background:#1d0a24;overflow:hidden;touch-action:none;cursor:zoom-in;user-select:none;-webkit-user-select:none}
+.lb{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);max-height:92vh}
+.stage{position:relative;min-width:0;height:min(88vh,820px);background:#1d0a24;overflow:hidden;touch-action:none;cursor:zoom-in;user-select:none;-webkit-user-select:none}
 .stage.zoomed{cursor:grab}.stage.drag{cursor:grabbing}
-.stage img{display:block;max-width:100%;max-height:100%;width:auto;height:auto;margin:auto;object-fit:contain;transform-origin:center center;will-change:transform;pointer-events:none;-webkit-user-drag:none}
+.stage img{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:contain;object-position:center center;transform-origin:center center;will-change:transform;pointer-events:none;-webkit-user-drag:none}
 .zc{position:absolute;left:50%;bottom:.8rem;transform:translateX(-50%);display:flex;gap:.3rem;background:rgba(29,10,36,.85);padding:.3rem;border-radius:99px;z-index:3}
 .zc button{border:0;border-radius:99px;min-width:2.6rem;height:2.4rem;padding:0 .7rem;background:var(--bg2);color:var(--ink);font:800 1.1rem Nunito;cursor:pointer}
 .zc button:hover{background:var(--red)}
@@ -301,7 +301,7 @@ ART.forEach((a,i)=>{
 });
 const dlg=$('#dlg');
 function show(i){ const n=ART.length; cur=(i+n)%n; const a=ART[cur];
-  zReset(); $('#lbimg').src=`img/${a.f}.jpg`; $('#lbimg').alt=a.t; $('#lbtitle').textContent=a.t; $('#lbtag').textContent=a.c; $('#lbdesc').textContent=a.d; }
+  zReset(); $('#lbimg').onload=zApply; $('#lbimg').src=`img/${a.f}.jpg`; $('#lbimg').alt=a.t; $('#lbtitle').textContent=a.t; $('#lbtag').textContent=a.c; $('#lbdesc').textContent=a.d; }
 function open(i){ show(i); dlg.showModal(); }
 $('#close').onclick=()=>dlg.close();
 dlg.onclick=e=>{ if(e.target===dlg) dlg.close(); };
@@ -311,7 +311,7 @@ addEventListener('keydown',e=>{ if(!dlg.open) return; if(e.key=='ArrowLeft') ste
   if(e.key=='+'||e.key=='=') zBtn(1.4); if(e.key=='-') zBtn(1/1.4); if(e.key=='0') zReset(); });
 /* Zoom de la imagen: rueda, pellizco, doble toque / clic, arrastrar para mover */
 const stage=$('#stage'), lbimg=$('#lbimg'), Z={z:1,x:0,y:0}, zp=new Map(); let zStart=0, zDist=0, zMv=0, zPinch=false, zLast=0, zD0=null;
-function zApply(){ const sw=stage.clientWidth, sh=stage.clientHeight, mx=Math.max(0,(lbimg.offsetWidth*Z.z-sw)/2), my=Math.max(0,(lbimg.offsetHeight*Z.z-sh)/2);
+function zApply(){ const sw=stage.clientWidth, sh=stage.clientHeight, nw=lbimg.naturalWidth||sw, nh=lbimg.naturalHeight||sh, fit=Math.min(sw/nw,sh/nh), mx=Math.max(0,(nw*fit*Z.z-sw)/2), my=Math.max(0,(nh*fit*Z.z-sh)/2);
   Z.x=Math.max(-mx,Math.min(mx,Z.x)); Z.y=Math.max(-my,Math.min(my,Z.y));
   lbimg.style.transform=`translate(${Z.x}px,${Z.y}px) scale(${Z.z})`; stage.classList.toggle('zoomed',Z.z>1.01); $('#zrst').textContent=Math.round(Z.z*100)+'%'; }
 function zAt(nz,cx,cy){ nz=Math.max(1,Math.min(6,nz)); const r=stage.getBoundingClientRect(), px=cx-r.left-r.width/2, py=cy-r.top-r.height/2, k=nz/Z.z;
